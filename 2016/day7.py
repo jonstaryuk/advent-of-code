@@ -44,7 +44,7 @@ def supports_ssl(ip):
     babs_wanted = []
     for string in strings:
         if string[0] != '[':
-            babs_wanted += ["".join(invert(triple)) for triple in abas(string)]
+            babs_wanted += [invert(triple) for triple in abas(string)]
 
     babs_found = []
     for string in strings:
