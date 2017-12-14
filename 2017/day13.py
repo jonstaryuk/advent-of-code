@@ -2,50 +2,28 @@ from itertools import count
 from sys import stdin
 
 
-def run(layers, scanners, delay=0):
-    last = max(layers.keys())
-
-    pos = -delay
-    while pos <= last:
-        for l in range(last + 1):
-            s, forward = scanners[l]
-            r = layers[l]
-
-            if pos == l and s == 1:
-                yield l * layers[l]
-
-            if forward and r != 0:
-                s += 1
-                if s >= r:
-                    forward = False
-            elif r != 0:
-                s -= 1
-                if s <= 1:
-                    forward = True
-
-            scanners[l] = (s, forward)
-
-        pos += 1
+data = (line.split(': ') for line in stdin.readlines())
+layers = {int(d[0]): int(d[1]) for d in data}
 
 
-def solve(lines):
-    info = [line.split(': ') for line in lines]
-    layers = {int(l): int(r) for l, r in info}
-    last = max(layers.keys())
-    layers.update({i: 0 for i in range(last) if i not in layers})
+def scanner_position(t, l):
+    if l not in layers:
+        return -1
 
-    scanners = {l: (int(layers[l] != 0), True) for l in layers.keys()}
-    print(sum(run(layers, scanners)))
-
-    for delay in count():
-        scanners = {l: (int(layers[l] != 0), True) for l in layers.keys()}
-        runner = run(layers, scanners, delay)
-        try:
-            next(runner)
-        except StopIteration:
-            print(delay)
-            exit(0)
+    height = layers[l]
+    span = height * 2 - 2
+    offset = t % span
+    return (offset if offset < height else span - offset) + 1
 
 
-if __name__ == '__main__':
-    solve(stdin.readlines())
+def journey(delay=0):
+    for t in range(max(layers) + 1):
+        yield scanner_position(t + delay, t)
+
+
+print(sum(l * layers[l] for l, pos in enumerate(journey()) if pos == 1))
+
+for delay in count():
+    if not any(pos == 1 for pos in journey(delay)):
+        print(delay)
+        break
