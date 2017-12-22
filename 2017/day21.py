@@ -12,8 +12,7 @@ def blocks(image):
     for row_bound in range(0, len(image), size):
         for col_bound in range(0, len(image), size):
             rows = image[row_bound:row_bound + size]
-            block = tuple(row[col_bound:col_bound + size] for row in rows)
-            yield block
+            yield tuple(row[col_bound:col_bound + size] for row in rows)
 
 
 def rotate(array):
