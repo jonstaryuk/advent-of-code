@@ -1,110 +1,56 @@
-from sys import stdin
-from collections import defaultdict
 import itertools
+from sys import stdin
 
 
-lines = stdin.readlines()
-
-trees = [[int(x) for x in list(l.strip())] for l in lines]
-
-h = len(trees)
-w = len(trees[0])
-visible = set()
-for i in range(h):
-    for j in range(w):
-        if i == 0 or j == 0 or i == h-1 or j == w-1:
-            visible.add((i, j))
+trees = [[int(x) for x in list(l.strip())] for l in stdin.readlines()]
+h, w = len(trees), len(trees[0])
+all_trees = list(itertools.product(range(h), range(w)))
 
 
-def score(y, x):
-    print("***", y, x)
-    me = trees[y][x]
-    down = 0
-    for i in range(y+1, h):
-        print(i, x)
-        if trees[i][x] < me:
-            down += 1
-            print("yes")
-        else:
-            down += 1
+def look(pos, dir):
+    i, j = pos
+    di, dj = dir
+
+    while True:
+        i += di
+        j += dj
+        if not (0 <= i < h and 0 <= j < w):
             break
-    up = 0
-    for i in range(y-1, -1, -1):
-        print(i, x)
-        if trees[i][x] < me:
-            up += 1
-            print("yes")
-        else:
-            up += 1
-            print("breaking because", i, x, "ge", me)
-            break
-
-    right = 0
-    for j in range(x+1, w):
-        print(y, j)
-        if trees[y][j] < me:
-            right += 1
-            print("yes")
-        else:
-            right += 1
-            break
-
-    left = 0
-    for j in range(x-1, -1, -1):
-        print(y, j)
-        if trees[y][j] < me:
-            left += 1
-            print("yes")
-        else:
-            left += 1
-            break
-
-    return down * up * right * left
+        yield (i, j)
 
 
-# for i in range(h):
-#     m = trees[i][0]
-#     for j in range(w):
-#         if m < trees[i][j]:
-#             # print(f"{(i, j)} visible because {trees[i][j]} < {m}")
-#             visible.add((i, j))
-#         m = max(m, trees[i][j])
+DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
-#     m = trees[i][-1]
-#     for j in range(w-1, -1, -1):
-#         if m < trees[i][j]:
-#             # print(f"{(i, j)} visible because {trees[i][j]} < {m}")
-#             visible.add((i, j))
-#         m = max(m, trees[i][j])
 
-# trees = list(zip(*trees))
-# print(*trees, sep="\n")
-# for i in range(w):
-#     m = trees[i][0]
-#     for j in range(h):
-#         if m < trees[i][j]:
-#             # print(f"{(j, i)} visible because {trees[i][j]} < {m}")
-#             visible.add((j, i))
-#         m = max(m, trees[i][j])
+def visible(trees, pos):
+    i, j = pos
 
-#     m = trees[i][-1]
-#     for j in range(h-1, -1, -1):
-#         if m < trees[i][j]:
-#             # print(f"{(i, j)} visible because {trees[i][j]} < {m}")
-#             visible.add((j, i))
-#         m = max(m, trees[i][j])
+    if i == 0 or j == 0 or i == h-1 or j == w-1:
+        return True
 
-# for i in range(h):
-#     for j in range(w):
-#         if (i, j) in visible:
-#             print('*', end='')
-#     print()
-print(len(visible))
+    for dir in DIRECTIONS:
+        if all(trees[a][b] < trees[i][j] for a, b in look((i, j), dir)):
+            return True
+    return False
 
-# print(list(itertools.product(h, w)))
-for i in range(h):
-    for j in range(w):
-        print(score(i, j), end="")
-    print()
 
-print(max(score(i, j) for i, j in itertools.product(range(h), range(w))))
+print(len(set(pos for pos in all_trees if visible(trees, pos))))
+
+
+def score(trees, pos):
+    i, j = pos
+    own_height = trees[i][j]
+
+    total = 1
+    for dir in DIRECTIONS:
+        subtotal = 0
+        for a, b in look(pos, dir):
+            subtotal += 1
+            if trees[a][b] >= own_height:
+                break
+        total *= subtotal
+
+    return total
+
+
+print(max(score(trees, pos) for pos in all_trees))
