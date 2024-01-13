@@ -1,6 +1,5 @@
+.DS_Store
 *.in
-
-2015
 
 # Python
 __pycache__
